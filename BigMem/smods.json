@@ -1,0 +1,10 @@
+{
+	"id": "BigMem",
+	"name": "BigMem",
+	"display_name": "",
+	"author": ["Jack"],
+	"prefix": "bigmem",
+	"description": "Memory Optimizations for balatro ",
+	"main_file": "bigmem/smods.lua",
+	"version": "0.0.1"
+}

@@ -1,0 +1,47 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.module]
+source = "bigmem/config.lua"
+before = "main.lua"
+name = "bigmem.config"
+
+[[patches]]
+[patches.module]
+source = "bigmem/watcher.lua"
+before = "main.lua"
+name = "bigmem.watcher"
+
+[[patches]]
+[patches.module]
+source = "bigmem/core.lua"
+before = "engine/controller.lua"
+name = "bigmem.core"
+
+[[patches]]
+[patches.module]
+source = "bigmem/superboost.lua"
+before = "engine/controller.lua"
+name = "bigmem.superboost"
+
+[[patches]]
+[patches.module]
+source = "bigmem/mathopt.lua"
+before = "main.lua"
+name = "bigmem.mathopt"
+
+[[patches]]
+[patches.module]
+source = "bigmem/mathopt.lua"
+before = "engine/math.lua"
+name = "bigmem.mathopt"
+
+[[patches]]
+[patches.module]
+source = "bigmem/large_number_fix.lua"
+before = "main.lua"
+name = "bigmem.large_number_fix"
+
