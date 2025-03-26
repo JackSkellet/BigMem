@@ -1,6 +1,7 @@
 <img alt="Balatro Gameplay" src="https://e.snmc.io/lk/l/x/3ac9502dc7c9faefe63e179816b7ff9b/11753474">
 
 💾 BigMem - Performance Boost Mod for Balatro 🃏
+
 ⚡ Optimize your Balatro runs before the RAM monster crashes the party.
 
 🧠 What is BigMem?
