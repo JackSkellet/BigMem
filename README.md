@@ -62,7 +62,7 @@ Dramatization. May not represent actual gameplay.
 6. Performance
 
 ## Contributing
-Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+Contributions are welcome!
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
