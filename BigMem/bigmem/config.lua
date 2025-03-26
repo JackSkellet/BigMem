@@ -21,6 +21,12 @@ local configDefinition = {
         default = true,
         info = { "Applies various performance optimizations." }
     },
+    rainbowTint = {
+        label = "Enable Rainbow Tint",
+        type = "toggle",
+        default = false,
+        info = { "Show a rainbow overlay when SUPER BOOST is active." }
+    },
     fastPow = {
         label = "Enable Fast Power Function",
         type = "toggle",
@@ -33,6 +39,24 @@ local configDefinition = {
         default = true,
         info = { "Uses optimized log10 function for better performance." }
     },
+    fastLog2 = {
+        label = "Enable Fast Log2 Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized log2 function for better performance." }
+    },
+    fastLn = {
+        label = "Enable Fast Natural Logarithm Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized natural logarithm function for better performance." }
+    },
+    fastInvSqrt = {
+        label = "Enable Fast Inverse Square Root Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized inverse square root function for better performance." }
+    },
     fastExp = {
         label = "Enable Fast Exponential Function",
         type = "toggle",
@@ -44,6 +68,24 @@ local configDefinition = {
         type = "toggle",
         default = true,
         info = { "Uses optimized square root function for better performance." }
+    },
+    fastSin = {
+        label = "Enable Fast Sine Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized sine function for better performance." }
+    },
+    fastFactorial = {
+        label = "Enable Fast Factorial Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized factorial function for better performance." }
+    },
+    fastGamma = {
+        label = "Enable Fast Gamma Function",
+        type = "toggle",
+        default = false,
+        info = { "Uses optimized gamma function for better performance." }
     },
     memoization = {
         label = "Enable Memoization",
@@ -84,7 +126,7 @@ local configDefinition = {
     limitFramerate = {
         label = "Limit Framerate",
         type = "select",
-        default = 60,
+        default = 144,
         values = { 60, 144, 240, "Unlimited" },
         info = { "Limits the maximum framerate to reduce CPU/GPU usage." }
     },
@@ -160,84 +202,6 @@ local configDefinition = {
         default = false,
         info = { "Uses optimized binomial coefficient function for better performance." }
     },
-    fastLog2 = {
-        label = "Enable Fast Log2 Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized log2 function for better performance." }
-    },
-    fastLog2Large = {
-        label = "Enable Fast Log2 for Large Numbers",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized log2 function for large numbers." }
-    },
-    fastLn = {
-        label = "Enable Fast Natural Logarithm Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized natural logarithm function for better performance." }
-    },
-    fastLnLarge = {
-        label = "Enable Fast Natural Logarithm for Large Numbers",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized natural logarithm function for large numbers." }
-    },
-    fastInvSqrt = {
-        label = "Enable Fast Inverse Square Root Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized inverse square root function for better performance." }
-    },
-    fastReciprocal = {
-        label = "Enable Fast Reciprocal Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized reciprocal function for better performance." }
-    },
-    fastReciprocalSqrt = {
-        label = "Enable Fast Reciprocal Square Root Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized reciprocal square root function for better performance." }
-    },
-    fastSqrtNewton = {
-        label = "Enable Fast Square Root (Newton-Raphson)",
-        type = "toggle",
-        default = false,
-        info = { "Uses Newton-Raphson method for fast square root approximation." }
-    },
-    fastExpSeries = {
-        label = "Enable Fast Exponential (Series Expansion)",
-        type = "toggle",
-        default = false,
-        info = { "Uses series expansion for fast exponential approximation." }
-    },
-    fastSinPoly = {
-        label = "Enable Fast Sine (Polynomial)",
-        type = "toggle",
-        default = false,
-        info = { "Uses polynomial approximation for fast sine calculation." }
-    },
-    fastCosPoly = {
-        label = "Enable Fast Cosine (Polynomial)",
-        type = "toggle",
-        default = false,
-        info = { "Uses polynomial approximation for fast cosine calculation." }
-    },
-    fastTanPoly = {
-        label = "Enable Fast Tangent (Polynomial)",
-        type = "toggle",
-        default = false,
-        info = { "Uses polynomial approximation for fast tangent calculation." }
-    },
-    rainbowTint = {
-        label = "BRB Message",
-        type = "toggle",
-        default = false,
-        info = { "Displays a BRB message on the screen." }
-    },
 }
 
 local function hasValue(tab, val)
@@ -288,59 +252,33 @@ end
 
 function BigMemConfig.applySetting(key, value)
     local mathopt = require("bigmem.mathopt")
-    if key == "fastPow" then
+    local enableDisableMap = {
+        fastPow = { enable = mathopt.enablePow, disable = mathopt.disablePow },
+        fastLog10 = { enable = mathopt.enableLog10, disable = mathopt.disableLog10 },
+        fastExp = { enable = mathopt.enableExp, disable = mathopt.disableExp },
+        fastSqrt = { enable = mathopt.enableSqrt, disable = mathopt.disableSqrt },
+        fastLog2 = { enable = mathopt.enableLog2, disable = mathopt.disableLog2 },
+        fastLn = { enable = mathopt.enableLn, disable = mathopt.disableLn },
+        fastSin = { enable = mathopt.enableSin, disable = mathopt.disableSin },
+        fastFactorial = { enable = mathopt.enableFactorial, disable = mathopt.disableFactorial },
+        fastGamma = { enable = mathopt.enableGamma, disable = mathopt.disableGamma },
+        memoization = { enable = mathopt.enableMemoization, disable = mathopt.disableMemoization },
+        precomputedTrig = { enable = mathopt.enablePrecomputedTrig, disable = mathopt.disablePrecomputedTrig },
+        tetration = { enable = mathopt.enableTetration, disable = mathopt.disableTetration },
+        pentation = { enable = mathopt.enablePentation, disable = mathopt.disablePentation },
+        hexation = { enable = mathopt.enableHexation, disable = mathopt.disableHexation },
+        heptation = { enable = mathopt.enableHeptation, disable = mathopt.disableHeptation },
+        octation = { enable = mathopt.enableOctation, disable = mathopt.disableOctation },
+        enableBatching = { enable = mathopt.enableBatching, disable = mathopt.disableBatching },
+        fastFibonacci = { enable = mathopt.enableFibonacci, disable = mathopt.disableFibonacci },
+        fastBinomial = { enable = mathopt.enableBinomial, disable = mathopt.disableBinomial },
+    }
+
+    if enableDisableMap[key] then
         if value then
-            mathopt.enablePow()
+            enableDisableMap[key].enable()
         else
-            mathopt.disablePow()
-        end
-    elseif key == "fastLog10" then
-        if value then
-            mathopt.enableLog10()
-        else
-            mathopt.disableLog10()
-        end
-    elseif key == "fastExp" then
-        if value then
-            mathopt.enableExp()
-        else
-            mathopt.disableExp()
-        end
-    elseif key == "fastSqrt" then
-        if value then
-            mathopt.enableSqrt()
-        else
-            mathopt.disableSqrt()
-        end
-    elseif key == "fastLog10Large" then
-        if value then
-            mathopt.enableLog10Large()
-        else
-            mathopt.disableLog10Large()
-        end
-    elseif key == "fastPowLarge" then
-        if value then
-            mathopt.enablePowLarge()
-        else
-            mathopt.disablePowLarge()
-        end
-    elseif key == "fastExpLarge" then
-        if value then
-            mathopt.enableExpLarge()
-        else
-            mathopt.disableExpLarge()
-        end
-    elseif key == "memoization" then
-        if value then
-            mathopt.enableMemoization()
-        else
-            mathopt.disableMemoization()
-        end
-    elseif key == "precomputedTrig" then
-        if value then
-            mathopt.enablePrecomputedTrig()
-        else
-            mathopt.disablePrecomputedTrig()
+            enableDisableMap[key].disable()
         end
     elseif key == "limitFramerate" then
         if value == "Unlimited" then
@@ -364,133 +302,6 @@ function BigMemConfig.applySetting(key, value)
         -- No specific function to call, handled in superboost.lua
     elseif key == "hideDeck" then
         -- No specific function to call, handled in superboost.lua
-    elseif key == "tetration" then
-        if value then
-            mathopt.enableTetration()
-        else
-            mathopt.disableTetration()
-        end
-    elseif key == "pentation" then
-        if value then
-            mathopt.enablePentation()
-        else
-            mathopt.disablePentation()
-        end
-    elseif key == "hexation" then
-        if value then
-            mathopt.enableHexation()
-        else
-            mathopt.disableHexation()
-        end
-    elseif key == "heptation" then
-        if value then
-            mathopt.enableHeptation()
-        else
-            mathopt.disableHeptation()
-        end
-    elseif key == "octation" then
-        if value then
-            mathopt.enableOctation()
-        else
-            mathopt.disableOctation()
-        end
-    elseif key == "enableBatching" then
-        if value then
-            mathopt.enableBatching()
-        else
-            mathopt.disableBatching()
-        end
-    elseif key == "drunkMode" then
-        require("bigmem.drunkmode").apply(value)
-    elseif key == "fastFibonacci" then
-        if value then
-            mathopt.enableFibonacci()
-        else
-            mathopt.disableFibonacci()
-        end
-    elseif key == "fastBinomial" then
-        if value then
-            mathopt.enableBinomial()
-        else
-            mathopt.disableBinomial()
-        end
-    elseif key == "fastLog2" then
-        if value then
-            mathopt.enableLog2()
-        else
-            mathopt.disableLog2()
-        end
-    elseif key == "fastLog2Large" then
-        if value then
-            mathopt.enableLog2Large()
-        else
-            mathopt.disableLog2Large()
-        end
-    elseif key == "fastLn" then
-        if value then
-            mathopt.enableLn()
-        else
-            mathopt.disableLn()
-        end
-    elseif key == "fastLnLarge" then
-        if value then
-            mathopt.enableLnLarge()
-        else
-            mathopt.disableLnLarge()
-        end
-    elseif key == "fastInvSqrt" then
-        if value then
-            mathopt.enableInvSqrt()
-        else
-            mathopt.disableInvSqrt()
-        end
-    elseif key == "fastReciprocal" then
-        if value then
-            mathopt.enableReciprocal()
-        else
-            mathopt.disableReciprocal()
-        end
-    elseif key == "fastReciprocalSqrt" then
-        if value then
-            mathopt.enableReciprocalSqrt()
-        else
-            mathopt.disableReciprocalSqrt()
-        end
-    elseif key == "fastSqrtNewton" then
-        if value then
-            mathopt.disableSqrt() -- Disable other sqrt optimizations
-            mathopt.enableSqrt()
-        else
-            mathopt.disableSqrt()
-        end
-    elseif key == "fastExpSeries" then
-        if value then
-            mathopt.disableExp() -- Disable other exp optimizations
-            mathopt.enableExp()
-        else
-            mathopt.disableExp()
-        end
-    elseif key == "fastSinPoly" then
-        if value then
-            mathopt.disableSin() -- Disable other sin optimizations
-            mathopt.enableSin()
-        else
-            mathopt.disableSin()
-        end
-    elseif key == "fastCosPoly" then
-        if value then
-            mathopt.disableCos() -- Disable other cos optimizations
-            mathopt.enableCos()
-        else
-            mathopt.disableCos()
-        end
-    elseif key == "fastTanPoly" then
-        if value then
-            mathopt.disableTan() -- Disable other tan optimizations
-            mathopt.enableTan()
-        else
-            mathopt.disableTan()
-        end
     elseif key == "reduceAnimations" then
         if value then
             G.SHADERS_ENABLED = false
@@ -524,7 +335,7 @@ function BigMemConfig.generateConfigTabs()
                     if hasValue({ 
                         "enableLogging", 
                         "optimizeInterval", 
-                        "limitFramerate"
+                        "limitFramerate",
                     }, key) then
                         local ref = configMemory[key] or { value = def.default }
 
@@ -537,7 +348,7 @@ function BigMemConfig.generateConfigTabs()
                                     BigMemConfig.setValue(key, v)
                                 end,
                                 info = def.info,
-                                config = { font_size = 5 } -- Smaller font size
+                                config = { font_size = 10 } -- Smaller font size
                             }))
                         elseif def.type == "select" then
                             local idx = hasValue(def.values, BigMemConfig.getValue(key)) or 1
@@ -548,7 +359,7 @@ function BigMemConfig.generateConfigTabs()
                                 label = def.label,
                                 dp_key = key,
                                 info = def.info,
-                                config = { font_size = 10 } -- Smaller font size
+                                config = { font_size = 5 } -- Smaller font size
                             }))
                         end
                     end
@@ -572,7 +383,7 @@ function BigMemConfig.generateConfigTabs()
             label = "Visuals",
             tab_definition_function = function(args)
                 local nodes = {}
-                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck"}) do
+                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck", "disableParticles"}) do
                     local def = configDefinition[key]
                     local ref = configMemory[key] or { value = def.default }
 
@@ -587,17 +398,6 @@ function BigMemConfig.generateConfigTabs()
                                 end,
                                 info = def.info,
                                 config = { font_size = 5 } -- Smaller font size
-                            }))
-                        elseif def.type == "select" then
-                            local idx = hasValue(def.values, BigMemConfig.getValue(key)) or 1
-                            table.insert(nodes, create_option_cycle({
-                                options = def.values,
-                                current_option = idx,
-                                opt_callback = "BigMem_conf_select_callback",
-                                label = def.label,
-                                dp_key = key,
-                                info = def.info,
-                                config = { font_size = 10 } -- Smaller font size
                             }))
                         end
                     end
@@ -622,7 +422,7 @@ function BigMemConfig.generateConfigTabs()
             tab_definition_function = function(args)
                 local nodes = {}
                 for key, def in pairs(configDefinition) do
-                    if hasValue({ "fastPow", "fastLog10", "fastExp", "fastSqrt", "fastLog2", "fastLog2Large", "fastLn", "fastLnLarge" }, key) then
+                    if hasValue({ "fastPow", "fastLog10", "fastExp", "fastSqrt", "fastLog2", "fastLn", "fastFactorial", "fastGamma" }, key) then
                         local ref = configMemory[key] or { value = def.default }
                         if def.type == "toggle" then
                             table.insert(nodes, create_toggle({

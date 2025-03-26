@@ -1,4 +1,3 @@
--- bigmem/mathopt.lua
 local mathopt = {}
 
 print("[BigMem] Applying math optimizations...")
@@ -19,13 +18,14 @@ local batchingEnabled = false
 
 -- Memoization function
 local function memoize(func)
+    local cache = {}
     return function(...)
         local args = {...}
         local key = table.concat(args, ",")
-        if not memoizationCache[key] then
-            memoizationCache[key] = func(...)
+        if not cache[key] then
+            cache[key] = func(...)
         end
-        return memoizationCache[key]
+        return cache[key]
     end
 end
 
@@ -44,21 +44,8 @@ mathopt.fast_log10 = function(x)
     return log * 0.4342944819 -- = 1/log(10)
 end
 
--- Fast logarithm base 10 for large numbers
-mathopt.fast_log10_large = function(x)
-    if type(x) ~= "number" or x <= 0 then return -math.huge end
-    local log = math.log(x)
-    return log * 0.4342944819 -- = 1/log(10)
-end
-
 -- Fast power approximation
 mathopt.fast_pow = function(a, b)
-    return math.exp(b * math.log(a))
-end
-
--- Fast power approximation for large numbers
-mathopt.fast_pow_large = function(a, b)
-    if a == 0 then return 0 end
     return math.exp(b * math.log(a))
 end
 
@@ -73,11 +60,6 @@ mathopt.fast_exp = function(x)
     return result
 end
 
--- Fast exponential approximation for large numbers
-mathopt.fast_exp_large = function(x)
-    return (1 + x / 1024) ^ 1024
-end
-
 -- Fast square root approximation using Newton-Raphson method
 mathopt.fast_sqrt = function(x)
     local guess = x / 2
@@ -90,19 +72,19 @@ end
 -- Fast cosine approximation using a polynomial
 mathopt.fast_cos = function(x)
     local x2 = x * x
-    return 1 - (x2 / 2) + (x2 * x2 / 24)
+    return 1 - x2 / 2 + x2 * x2 / 24
 end
 
 -- Fast tangent approximation using a polynomial
 mathopt.fast_tan = function(x)
     local x2 = x * x
-    return x + (x2 * x / 3) + (x2 * x2 * x / 5)
+    return x + x2 * x / 3 + x2 * x2 * x / 5
 end
 
 -- Fast sine approximation using a polynomial
 mathopt.fast_sin = function(x)
     local x2 = x * x
-    return x - (x2 * x / 6) + (x2 * x2 * x / 120)
+    return x - x2 * x / 6 + x2 * x2 * x / 120
 end
 
 -- Fast factorial approximation using Stirling's approximation
@@ -206,251 +188,60 @@ mathopt.fast_log2 = function(x)
     return math.log(x) / math.log(2)
 end
 
--- Fast logarithm base 2 for large numbers
-mathopt.fast_log2_large = function(x)
-    if type(x) ~= "number" or x <= 0 then return -math.huge end
-    return math.log(x) / math.log(2)
-end
-
 -- Fast natural logarithm
 mathopt.fast_ln = function(x)
     return math.log(x)
 end
 
--- Fast natural logarithm for large numbers
-mathopt.fast_ln_large = function(x)
-    if type(x) ~= "number" or x <= 0 then return -math.huge end
-    return math.log(x)
+-- Enable/Disable functions
+local function enableFastMathFunction(name, fastFunc)
+    print("[BigMem] Enabling fast " .. name)
+    math[name] = fastFunc
 end
 
--- Enable fast log10 function
-function mathopt.enableLog10()
-    print("[BigMem] Enabling fast log10")
-    math.log10 = mathopt.fast_log10
+local function disableFastMathFunction(name, originalFunc)
+    print("[BigMem] Disabling fast " .. name)
+    math[name] = originalFunc
 end
 
--- Disable fast log10 function
-function mathopt.disableLog10()
-    print("[BigMem] Disabling fast log10")
-    math.log10 = mathopt.original_log10
+function mathopt.enableLog10() enableFastMathFunction("log10", mathopt.fast_log10) end
+function mathopt.disableLog10() disableFastMathFunction("log10", mathopt.original_log10) end
+function mathopt.enableExp() enableFastMathFunction("exp", mathopt.fast_exp) end
+function mathopt.disableExp() disableFastMathFunction("exp", mathopt.original_exp) end
+function mathopt.enableSqrt() enableFastMathFunction("sqrt", mathopt.fast_sqrt) end
+function mathopt.disableSqrt() disableFastMathFunction("sqrt", mathopt.original_sqrt) end
+function mathopt.enableCos() enableFastMathFunction("cos", mathopt.fast_cos) end
+function mathopt.disableCos() disableFastMathFunction("cos", mathopt.original_cos) end
+function mathopt.enableTan() enableFastMathFunction("tan", mathopt.fast_tan) end
+function mathopt.disableTan() disableFastMathFunction("tan", mathopt.original_tan) end
+function mathopt.enablePow() enableFastMathFunction("pow", mathopt.fast_pow) end
+function mathopt.disablePow() disableFastMathFunction("pow", mathopt.original_pow) end
+function mathopt.enableFactorial() enableFastMathFunction("factorial", mathopt.fast_factorial) end
+function mathopt.disableFactorial() disableFastMathFunction("factorial", nil) end
+function mathopt.enableGamma() enableFastMathFunction("gamma", mathopt.fast_gamma) end
+function mathopt.disableGamma() disableFastMathFunction("gamma", nil) end
+function mathopt.enableFibonacci() enableFastMathFunction("fibonacci", mathopt.fast_fibonacci) end
+function mathopt.disableFibonacci() disableFastMathFunction("fibonacci", nil) end
+function mathopt.enableBinomial() enableFastMathFunction("binomial", mathopt.fast_binomial) end
+function mathopt.disableBinomial() disableFastMathFunction("binomial", nil) end
+function mathopt.enableLog2() enableFastMathFunction("log2", mathopt.fast_log2) end
+function mathopt.disableLog2() disableFastMathFunction("log2", nil) end
+function mathopt.enableLn() enableFastMathFunction("ln", mathopt.fast_ln) end
+function mathopt.disableLn() disableFastMathFunction("ln", nil) end
+function mathopt.enableSin() enableFastMathFunction("sin", mathopt.fast_sin) end
+function mathopt.disableSin() disableFastMathFunction("sin", mathopt.original_sin) end
+
+-- Enable batching
+function mathopt.enableBatching()
+    print("[BigMem] Enabling batching")
+    batchingEnabled = true
 end
 
--- Enable fast exponential function using series expansion
-function mathopt.enableExp()
-    print("[BigMem] Enabling fast exponential")
-    math.exp = mathopt.fast_exp
-end
-
--- Disable fast exponential function
-function mathopt.disableExp()
-    print("[BigMem] Disabling fast exponential")
-    math.exp = mathopt.original_exp
-end
-
--- Enable fast square root function using Newton-Raphson method
-function mathopt.enableSqrt()
-    print("[BigMem] Enabling fast square root")
-    math.sqrt = mathopt.fast_sqrt
-end
-
--- Disable fast square root function
-function mathopt.disableSqrt()
-    print("[BigMem] Disabling fast square root")
-    math.sqrt = mathopt.original_sqrt
-end
-
--- Enable fast cosine function using polynomial approximation
-function mathopt.enableCos()
-    print("[BigMem] Enabling fast cosine")
-    math.cos = mathopt.fast_cos
-end
-
--- Disable fast cosine function
-function mathopt.disableCos()
-    print("[BigMem] Disabling fast cosine")
-    math.cos = mathopt.original_cos
-end
-
--- Enable fast tangent function using polynomial approximation
-function mathopt.enableTan()
-    print("[BigMem] Enabling fast tangent")
-    math.tan = mathopt.fast_tan
-end
-
--- Disable fast tangent function
-function mathopt.disableTan()
-    print("[BigMem] Disabling fast tangent")
-    math.tan = mathopt.original_tan
-end
-
--- Enable fast sine function using polynomial approximation
-function mathopt.enableSin()
-    print("[BigMem] Enabling fast sine")
-    math.sin = mathopt.fast_sin
-end
-
--- Disable fast sine function
-function mathopt.disableSin()
-    print("[BigMem] Disabling fast sine")
-    math.sin = mathopt.original_sin
-end
-
--- Enable fast power function
-function mathopt.enablePow()
-    print("[BigMem] Enabling fast power")
-    math.pow = mathopt.fast_pow
-end
-
--- Disable fast power function
-function mathopt.disablePow()
-    print("[BigMem] Disabling fast power")
-    math.pow = mathopt.original_pow
-end
-
--- Enable fast logarithm base 10 for large numbers
-function mathopt.enableLog10Large()
-    print("[BigMem] Enabling fast log10 for large numbers")
-    math.log10 = mathopt.fast_log10_large
-end
-
--- Disable fast logarithm base 10 for large numbers
-function mathopt.disableLog10Large()
-    print("[BigMem] Disabling fast log10 for large numbers")
-    math.log10 = mathopt.original_log10
-end
-
--- Enable fast power function for large numbers
-function mathopt.enablePowLarge()
-    print("[BigMem] Enabling fast power for large numbers")
-    math.pow = mathopt.fast_pow_large
-end
-
--- Disable fast power function for large numbers
-function mathopt.disablePowLarge()
-    print("[BigMem] Disabling fast power for large numbers")
-    math.pow = mathopt.fast_pow
-end
-
--- Enable fast exponential function for large numbers
-function mathopt.enableExpLarge()
-    print("[BigMem] Enabling fast exponential for large numbers")
-    math.exp = mathopt.fast_exp_large
-end
-
--- Disable fast exponential function for large numbers
-function mathopt.disableExpLarge()
-    print("[BigMem] Disabling fast exponential for large numbers")
-    math.exp = mathopt.original_exp
-end
-
--- Enable fast factorial function
-function mathopt.enableFactorial()
-    print("[BigMem] Enabling fast factorial")
-    math.factorial = mathopt.fast_factorial
-end
-
--- Disable fast factorial function
-function mathopt.disableFactorial()
-    print("[BigMem] Disabling fast factorial")
-    math.factorial = nil
-end
-
--- Enable fast gamma function
-function mathopt.enableGamma()
-    print("[BigMem] Enabling fast gamma")
-    math.gamma = mathopt.fast_gamma
-end
-
--- Disable fast gamma function
-function mathopt.disableGamma()
-    print("[BigMem] Disabling fast gamma")
-    math.gamma = nil
-end
-
--- Enable fast Fibonacci function
-function mathopt.enableFibonacci()
-    print("[BigMem] Enabling fast Fibonacci")
-    math.fibonacci = mathopt.fast_fibonacci
-end
-
--- Disable fast Fibonacci function
-function mathopt.disableFibonacci()
-    print("[BigMem] Disabling fast Fibonacci")
-    math.fibonacci = nil
-end
-
--- Enable fast binomial coefficient function
-function mathopt.enableBinomial()
-    print("[BigMem] Enabling fast binomial coefficient")
-    math.binomial = mathopt.fast_binomial
-end
-
--- Disable fast binomial coefficient function
-function mathopt.disableBinomial()
-    print("[BigMem] Disabling fast binomial coefficient")
-    math.binomial = nil
-end
-
--- Enable fast logarithm base 2 function
-function mathopt.enableLog2()
-    print("[BigMem] Enabling fast log2")
-    math.log2 = mathopt.fast_log2
-end
-
--- Disable fast logarithm base 2 function
-function mathopt.disableLog2()
-    print("[BigMem] Disabling fast log2")
-    math.log2 = nil
-end
-
--- Enable fast logarithm base 2 for large numbers
-function mathopt.enableLog2Large()
-    print("[BigMem] Enabling fast log2 for large numbers")
-    math.log2 = mathopt.fast_log2_large
-end
-
--- Disable fast logarithm base 2 for large numbers
-function mathopt.disableLog2Large()
-    print("[BigMem] Disabling fast log2 for large numbers")
-    math.log2 = nil
-end
-
--- Enable fast natural logarithm function
-function mathopt.enableLn()
-    print("[BigMem] Enabling fast ln")
-    math.ln = mathopt.fast_ln
-end
-
--- Disable fast natural logarithm function
-function mathopt.disableLn()
-    print("[BigMem] Disabling fast ln")
-    math.ln = nil
-end
-
--- Enable fast natural logarithm for large numbers
-function mathopt.enableLnLarge()
-    print("[BigMem] Enabling fast ln for large numbers")
-    math.ln = mathopt.fast_ln_large
-end
-
--- Disable fast natural logarithm for large numbers
-function mathopt.disableLnLarge()
-    print("[BigMem] Disabling fast ln for large numbers")
-    math.ln = nil
-end
-
--- Enable memoization
-function mathopt.enableMemoization()
-    print("[BigMem] Enabling memoization")
-    math.cos = memoize(math.cos)
-    math.tan = memoize(math.tan)
-end
-
--- Disable memoization
-function mathopt.disableMemoization()
-    print("[BigMem] Disabling memoization")
-    math.cos = mathopt.original_cos
-    math.tan = mathopt.original_tan
+-- Disable batching
+function mathopt.disableBatching()
+    print("[BigMem] Disabling batching")
+    batchingEnabled = false
+    mathopt.executeBatch()
 end
 
 -- Enable precomputed trigonometry
@@ -544,16 +335,72 @@ function mathopt.disableOctation()
     math.octation = nil
 end
 
--- Add a calculation to the batch queue
-function mathopt.addToBatch(func, ...)
-    table.insert(batchQueue, {func = func, args = {...}})
+-- Enable/Disable memoization
+function mathopt.enableMemoization()
+    print("[BigMem] Enabling memoization")
+    memoize = function(func)
+        local cache = {}
+        return function(...)
+            local args = {...}
+            local key = table.concat(args, ",")
+            if not cache[key] then
+                cache[key] = func(...)
+            end
+            return cache[key]
+        end
+    end
+end
+
+function mathopt.disableMemoization()
+    print("[BigMem] Disabling memoization")
+    memoize = function(func)
+        return func
+    end
+end
+
+
+-- Add a calculation to the batch queue with priority, dependencies, and timeout
+function mathopt.addToBatch(func, priority, dependencies, timeout, ...)
+    table.insert(batchQueue, {
+        func = func,
+        priority = priority or 0,
+        dependencies = dependencies or {},
+        timeout = timeout or 0,
+        args = {...}
+    })
 end
 
 -- Execute all calculations in the batch queue
 function mathopt.executeBatch()
+    -- Sort the batch queue by priority
+    table.sort(batchQueue, function(a, b)
+        return a.priority > b.priority
+    end)
+
+    local currentTime = love.timer.getTime()
+    local executed = {}
+
     for _, item in ipairs(batchQueue) do
-        item.func(table.unpack(item.args))
+        -- Check if all dependencies are met
+        local dependenciesMet = true
+        for _, dep in ipairs(item.dependencies) do
+            if not executed[dep] then
+                dependenciesMet = false
+                break
+            end
+        end
+
+        -- Check if the timeout has been reached
+        if dependenciesMet and (item.timeout == 0 or currentTime >= item.timeout) then
+            local success, err = pcall(item.func, table.unpack(item.args))
+            if success then
+                executed[item.func] = true
+            else
+                print("[BigMem] Error executing batch item:", err)
+            end
+        end
     end
+
     batchQueue = {}
 end
 
@@ -584,33 +431,6 @@ function mathopt.executeBatchWithDelay()
         end
     end
     batchQueue = {}
-end
-
--- Add a calculation to the batch queue with a priority
-function mathopt.addToBatchWithPriority(func, priority, ...)
-    table.insert(batchQueue, {func = func, priority = priority, args = {...}})
-    table.sort(batchQueue, function(a, b) return a.priority < b.priority end)
-end
-
--- Execute all calculations in the batch queue with priorities
-function mathopt.executeBatchWithPriority()
-    for _, item in ipairs(batchQueue) do
-        item.func(table.unpack(item.args))
-    end
-    batchQueue = {}
-end
-
--- Enable priority-based batching
-function mathopt.enablePriorityBatching()
-    print("[BigMem] Enabling priority-based batching")
-    batchingEnabled = true
-end
-
--- Disable priority-based batching
-function mathopt.disablePriorityBatching()
-    print("[BigMem] Disabling priority-based batching")
-    batchingEnabled = false
-    mathopt.executeBatchWithPriority()
 end
 
 return mathopt

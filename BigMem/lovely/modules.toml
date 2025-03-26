@@ -45,3 +45,11 @@ source = "bigmem/large_number_fix.lua"
 before = "main.lua"
 name = "bigmem.large_number_fix"
 
+[[modules]]
+name = "BigMem"
+main = "bigmem/main.lua"
+files = [
+    "bigmem/mathopt.lua",
+    "bigmem/config.lua",
+    "bigmem/event_queue_patch.lua"
+]

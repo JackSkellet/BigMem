@@ -13,13 +13,4 @@ if SMODS.current_mod then
     end
 
     require("bigmem.watcher").start(config)
-
-    -- Load the font file
-    local fontPath = "assets/balatro.ttf"
-    if love.filesystem.getInfo(fontPath) then
-        local largeFont = love.graphics.newFont(fontPath, 400)
-        require("bigmem.superboost").setLargeFont(largeFont)
-    else
-        core.log("Font file not found: " .. fontPath)
-    end
 end

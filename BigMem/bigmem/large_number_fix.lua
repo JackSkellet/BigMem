@@ -65,4 +65,48 @@ LargeNumberFix.omegaNum = memoize(function(a, b)
     return result
 end)
 
+-- Function to handle large comparisons
+function LargeNumberFix.compare(a, b)
+    if type(a) == "table" then
+        a = a[1] -- or some other appropriate value
+    end
+    if type(b) == "table" then
+        b = b[1] -- or some other appropriate value
+    end
+    return a > b
+end
+
+-- Function to handle large number equality
+function LargeNumberFix.equals(a, b)
+    if type(a) == "table" then
+        a = a[1] -- or some other appropriate value
+    end
+    if type(b) == "table" then
+        b = b[1] -- or some other appropriate value
+    end
+    return a == b
+end
+
+-- Function to handle large number minimum
+function LargeNumberFix.min(a, b)
+    if type(a) == "table" then
+        a = a[1] -- or some other appropriate value
+    end
+    if type(b) == "table" then
+        b = b[1] -- or some other appropriate value
+    end
+    return math.min(a, b)
+end
+
+-- Function to handle large number maximum
+function LargeNumberFix.max(a, b)
+    if type(a) == "table" then
+        a = a[1] -- or some other appropriate value
+    end
+    if type(b) == "table" then
+        b = b[1] -- or some other appropriate value
+    end
+    return math.max(a, b)
+end
+
 return LargeNumberFix
