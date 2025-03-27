@@ -202,6 +202,15 @@ local configDefinition = {
         default = false,
         info = { "Uses optimized binomial coefficient function for better performance." }
     },
+    brightness = {
+        label = "Adjust Brightness",
+        type = "select",
+        category = "Visuals",
+        description = "Adjust the brightness of the game.",
+        values = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95 }, -- 10% increments, capped at 95% so you can actually see the game
+        default = 0, -- Default brightness level
+        info = { "Select the brightness level in 10% increments." }
+    },
 }
 
 local function hasValue(tab, val)
@@ -214,6 +223,7 @@ end
 function BigMemConfig.loadConfig()
     if not love.filesystem.getInfo("config/BigMem.cfg") then return end
     local data = love.filesystem.read("config/BigMem.cfg")
+    local brightnessFound = false
     for line in data:gmatch("[^\r\n]+") do
         local key, value = line:match("([^=]+)=([^=]+)")
         if key and configDefinition[key] then
@@ -226,28 +236,47 @@ function BigMemConfig.loadConfig()
                 else
                     value = tonumber(value)
                 end
+            elseif def.type == "slider" then
+                value = tonumber(value)
             else
                 value = tonumber(value)
             end
             configMemory[key] = { value = value }
+            if key == "brightness" then
+                brightnessFound = true
+                if value == nil then
+                    configMemory["brightness"] = { value = 0 }
+                end
+            end
         end
+    end
+    if not brightnessFound then
+        configMemory["brightness"] = { value = 0 }
     end
     BigMemConfig.applySettings()
 end
 
 function BigMemConfig.saveConfig()
     local saveData = {}
-    for k, v in pairs(configMemory) do
-        table.insert(saveData, k .. "=" .. tostring(v.value))
+    for key, value in pairs(configMemory) do
+        table.insert(saveData, key .. "=" .. tostring(value.value))
     end
-    love.filesystem.createDirectory("config")
     love.filesystem.write("config/BigMem.cfg", table.concat(saveData, "\n"))
 end
 
 function BigMemConfig.setValue(key, value)
+    if not key or value == nil then
+        print("Error: Invalid key or value in setValue")
+        return
+    end
+
     configMemory[key] = { value = value }
     BigMemConfig.applySetting(key, value)
     BigMemConfig.saveConfig()
+
+    if key == "brightness" then
+        require("bigmem.superboost").applyBrightness(value)
+    end
 end
 
 function BigMemConfig.applySetting(key, value)
@@ -314,6 +343,8 @@ function BigMemConfig.applySetting(key, value)
         require("bigmem.superboost").apply(BigMemConfig.getValue("superBoostMode"))
     end
 end
+
+
 
 function BigMemConfig.applySettings()
     for key, setting in pairs(configMemory) do
@@ -383,7 +414,7 @@ function BigMemConfig.generateConfigTabs()
             label = "Visuals",
             tab_definition_function = function(args)
                 local nodes = {}
-                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck", "disableParticles"}) do
+                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck", "disableParticles", "brightness"}) do
                     local def = configDefinition[key]
                     local ref = configMemory[key] or { value = def.default }
 
@@ -396,6 +427,31 @@ function BigMemConfig.generateConfigTabs()
                                 callback = function(v)
                                     BigMemConfig.setValue(key, v)
                                 end,
+                                info = def.info,
+                                config = { font_size = 5 } -- Smaller font size
+                            }))
+                        elseif def.type == "slider" and key == "brightness" then
+                            table.insert(nodes, create_slider({
+                                label = def.label,
+                                ref_table = ref,
+                                ref_value = "value",
+                                min = def.min,
+                                max = def.max,
+                                step = def.step,
+                                callback = function(v)
+                                    G.FUNCS.BigMem_conf_slider_callback({ dp_key = key, to_val = v })
+                                end,
+                                info = def.info,
+                                config = { font_size = 5, width = "100%" } -- Full width slider
+                            }))
+                        elseif def.type == "select" and key == "brightness" then
+                            local idx = hasValue(def.values, BigMemConfig.getValue(key)) or 1
+                            table.insert(nodes, create_option_cycle({
+                                options = def.values,
+                                current_option = idx,
+                                opt_callback = "BigMem_conf_select_callback",
+                                label = def.label,
+                                dp_key = key,
                                 info = def.info,
                                 config = { font_size = 5 } -- Smaller font size
                             }))
@@ -527,6 +583,24 @@ end
 
 function G.FUNCS.BigMem_conf_select_callback(e)
     BigMemConfig.setValue(e.cycle_config.dp_key, e.to_val)
+end
+
+function G.FUNCS.BigMem_conf_slider_callback(e)
+    print("Slider callback triggered")
+    print("e.dp_key:", e.dp_key)
+    print("e.to_val:", e.to_val)
+
+    if not e.dp_key or not e.to_val then
+        print("Error: Missing dp_key or to_val in slider callback")
+        return
+    end
+
+    local value = tonumber(e.to_val)
+    if value then
+        BigMemConfig.setValue(e.dp_key, value)
+    else
+        print("Invalid value for slider:", e.to_val)
+    end
 end
 
 return BigMemConfig

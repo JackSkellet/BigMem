@@ -53,5 +53,5 @@ function eventQueue.getQueueSize()
     return #events
 end
 
--- Patch the existing event queue
+-- Set the global eventQueue variable
 _G.eventQueue = eventQueue

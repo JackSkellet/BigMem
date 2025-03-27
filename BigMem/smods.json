@@ -1,10 +1,10 @@
 {
 	"id": "BigMem",
 	"name": "BigMem",
-	"display_name": "",
+	"display_name": "BigMem - Performance Boost Mod",
 	"author": ["Jack"],
 	"prefix": "bigmem",
-	"description": "Memory Optimizations for balatro ",
+	"description": "Memory and Performance Optimizations for Balatro",
 	"main_file": "bigmem/smods.lua",
-	"version": "0.0.1"
+	"version": "0.0.5"
 }

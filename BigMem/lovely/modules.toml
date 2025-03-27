@@ -11,6 +11,12 @@ name = "bigmem.config"
 
 [[patches]]
 [patches.module]
+source = "bigmem/event_queue_patch.lua"
+before = "main.lua"
+name = "bigmem.event_queue_patch"
+
+[[patches]]
+[patches.module]
 source = "bigmem/watcher.lua"
 before = "main.lua"
 name = "bigmem.watcher"
@@ -51,5 +57,6 @@ main = "bigmem/main.lua"
 files = [
     "bigmem/mathopt.lua",
     "bigmem/config.lua",
-    "bigmem/event_queue_patch.lua"
+    "bigmem/event_queue_patch.lua",
+    "bigmem/config_ui.lua"
 ]

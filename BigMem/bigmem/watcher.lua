@@ -41,6 +41,13 @@ function Watcher.start(config)
             timeSinceLastCalc = 0
         end
 
+        -- Process events in the queue
+        if _G.eventQueue then
+            _G.eventQueue.processEvents()
+        else
+            print("[BigMem] Error: eventQueue is nil")
+        end
+
         -- Limit framerate
         if framerate ~= "Unlimited" then
             local targetFrameTime = 1 / framerate

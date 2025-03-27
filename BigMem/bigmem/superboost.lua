@@ -59,6 +59,9 @@ function SuperBoost.apply(enable)
             SuperBoost.toggleBRB()
         end
 
+        -- Apply brightness setting
+        SuperBoost.applyBrightness(BigMemConfig.getValue("brightness"))
+
     else
         print("[BigMem] SUPER BOOST Deactivated. Restoring settings...")
 
@@ -69,6 +72,19 @@ function SuperBoost.apply(enable)
         if BigMemConfig.getValue("rainbowTint") then
             love.draw = originalDraw
         end
+
+        -- Restore default brightness (100% transparent)
+        SuperBoost.applyBrightness(0)
+    end
+end
+
+function SuperBoost.applyBrightness(value)
+    love.draw = function()
+        originalDraw()
+        scaled_value = value / 100
+        love.graphics.setColor(0, 0, 0, scaled_value) -- Black color with adjustable opacity
+        love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        love.graphics.setColor(1, 1, 1, 1) -- Reset color to white
     end
 end
 
@@ -125,8 +141,6 @@ function SuperBoost.toggleBRB()
         love.draw = originalDraw
     end
 end
-
-
 
 function HSVToRGB(h, s, v)
     local c = v * s
