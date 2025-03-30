@@ -1,7 +1,6 @@
 local Watcher = {}
 local timeSinceLastGC = 0
 local timeSinceLastCalc = 0
-local calcInterval = 0.1 -- Interval for calculations in seconds
 local lastFrameTime = love.timer.getTime()
 
 function Watcher.start(config)
@@ -34,18 +33,6 @@ function Watcher.start(config)
                 end
                 print("[BigMem] Adjusted GC Interval: " .. gcInterval)
             end
-        end
-
-        if timeSinceLastCalc >= calcInterval then
-            -- Perform calculations here
-            timeSinceLastCalc = 0
-        end
-
-        -- Process events in the queue
-        if _G.eventQueue then
-            _G.eventQueue.processEvents()
-        else
-            print("[BigMem] Error: eventQueue is nil")
         end
 
         -- Limit framerate

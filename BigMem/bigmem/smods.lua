@@ -1,16 +1,24 @@
 if SMODS.current_mod then
-    SMODS.current_mod.prefix = "bigmem"
+    local mod = SMODS.current_mod
+    mod.prefix = "bigmem"
 
     local core = require("bigmem.core")
-    core.log("Initializing...")
-
     local config = require("bigmem.config")
     config.loadConfig()
 
-    SMODS.current_mod.config_tab = true
-    SMODS.current_mod.extra_tabs = function()
+    mod.config_tab = true
+    mod.extra_tabs = function()
         return config.generateConfigTabs()
     end
 
-    require("bigmem.watcher").start(config)
+    -- Optional: re-apply config settings if needed
+    if core.applySettings then
+        core.applySettings()
+    end
+
+    -- Start performance/memory watcher
+    local watcher = require("bigmem.watcher")
+    if watcher.start then
+        watcher.start(config)
+    end
 end

@@ -51,30 +51,6 @@ local configDefinition = {
         default = false,
         info = { "Uses optimized natural logarithm function for better performance." }
     },
-    fastInvSqrt = {
-        label = "Enable Fast Inverse Square Root Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized inverse square root function for better performance." }
-    },
-    fastExp = {
-        label = "Enable Fast Exponential Function",
-        type = "toggle",
-        default = true,
-        info = { "Uses optimized exponential function for better performance." }
-    },
-    fastSqrt = {
-        label = "Enable Fast Square Root Function",
-        type = "toggle",
-        default = true,
-        info = { "Uses optimized square root function for better performance." }
-    },
-    fastSin = {
-        label = "Enable Fast Sine Function",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized sine function for better performance." }
-    },
     fastFactorial = {
         label = "Enable Fast Factorial Function",
         type = "toggle",
@@ -105,23 +81,11 @@ local configDefinition = {
         default = true,
         info = { "Disables certain visual animations to increase performance." }
     },
-    fastLog10Large = {
-        label = "Enable Fast Log10 for Large Numbers",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized log10 function for large numbers." }
-    },
     fastPowLarge = {
         label = "Enable Fast Power for Large Numbers",
         type = "toggle",
         default = false,
         info = { "Uses optimized power function for large numbers." }
-    },
-    fastExpLarge = {
-        label = "Enable Fast Exponential for Large Numbers",
-        type = "toggle",
-        default = false,
-        info = { "Uses optimized exponential function for large numbers." }
     },
     limitFramerate = {
         label = "Limit Framerate",
@@ -184,12 +148,6 @@ local configDefinition = {
         default = false,
         info = { "Enables octation (a^^^^^^b) calculations." }
     },
-    enableBatching = {
-        label = "Enable Batching",
-        type = "toggle",
-        default = false,
-        info = { "Enables batching of calculations to improve performance." }
-    },
     fastFibonacci = {
         label = "Enable Fast Fibonacci Function",
         type = "toggle",
@@ -210,6 +168,36 @@ local configDefinition = {
         values = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95 }, -- 10% increments, capped at 95% so you can actually see the game
         default = 0, -- Default brightness level
         info = { "Select the brightness level in 10% increments." }
+    },
+    disableCardHoverPopup = {
+        label = "Disable Card Hover Popup",
+        type = "toggle",
+        default = false,
+        info = { "Disable card popups on hover. \nNEEDS A RESTART FOR IT TO WORK" },
+    },
+    batchJokerEffects = {
+        label = "Batch Joker Effects",
+        type = "toggle",
+        default = true,
+        info = { "Batch identical Joker evaluations to improve performance." }
+    },
+    flattenJokerCardLoop = {
+        label = "Flatten Joker Loops",
+        type = "toggle",
+        default = true,
+        info = { "Optimize Joker → Card loop nesting to reduce overhead." }
+    },
+    combineEvents = {
+        label = "Event Queue Optimization",
+        type = "toggle",
+        default = true,
+        info = { "Combines identical events like AddChips to reduce queue size." }
+    },
+    disableSaving = {
+        label = "Disable Saving",
+        type = "toggle",
+        default = false,
+        info = { "Disables saving to reduce crashes. Use with caution!" }
     },
 }
 
@@ -281,70 +269,55 @@ end
 
 function BigMemConfig.applySetting(key, value)
     local mathopt = require("bigmem.mathopt")
-    local enableDisableMap = {
-        fastPow = { enable = mathopt.enablePow, disable = mathopt.disablePow },
-        fastLog10 = { enable = mathopt.enableLog10, disable = mathopt.disableLog10 },
-        fastExp = { enable = mathopt.enableExp, disable = mathopt.disableExp },
-        fastSqrt = { enable = mathopt.enableSqrt, disable = mathopt.disableSqrt },
-        fastLog2 = { enable = mathopt.enableLog2, disable = mathopt.disableLog2 },
-        fastLn = { enable = mathopt.enableLn, disable = mathopt.disableLn },
-        fastSin = { enable = mathopt.enableSin, disable = mathopt.disableSin },
-        fastFactorial = { enable = mathopt.enableFactorial, disable = mathopt.disableFactorial },
-        fastGamma = { enable = mathopt.enableGamma, disable = mathopt.disableGamma },
-        memoization = { enable = mathopt.enableMemoization, disable = mathopt.disableMemoization },
-        precomputedTrig = { enable = mathopt.enablePrecomputedTrig, disable = mathopt.disablePrecomputedTrig },
-        tetration = { enable = mathopt.enableTetration, disable = mathopt.disableTetration },
-        pentation = { enable = mathopt.enablePentation, disable = mathopt.disablePentation },
-        hexation = { enable = mathopt.enableHexation, disable = mathopt.disableHexation },
-        heptation = { enable = mathopt.enableHeptation, disable = mathopt.disableHeptation },
-        octation = { enable = mathopt.enableOctation, disable = mathopt.disableOctation },
-        enableBatching = { enable = mathopt.enableBatching, disable = mathopt.disableBatching },
-        fastFibonacci = { enable = mathopt.enableFibonacci, disable = mathopt.disableFibonacci },
-        fastBinomial = { enable = mathopt.enableBinomial, disable = mathopt.disableBinomial },
-    }
+    local animations = require("bigmem.animations")
+    local flatjoker = require("bigmem.flatten_joker_loop")
+    local batchjoker = require("bigmem.batch_joker_effects")
+    local events = require("bigmem.events")
+    local disableSaving = require("bigmem.disable_saving")
 
-    if enableDisableMap[key] then
-        if value then
-            enableDisableMap[key].enable()
-        else
-            enableDisableMap[key].disable()
+    local map = mathopt.enableDisableMap
+    if map[key] then
+        if value then map[key].enable()
+        else map[key].disable()
         end
+
     elseif key == "limitFramerate" then
         if value == "Unlimited" then
-            love.window.setMode(0, 0, {vsync = false})
+            love.window.setMode(0, 0, { vsync = false })
         elseif value then
-            love.window.setMode(0, 0, {vsync = false})
+            love.window.setMode(0, 0, { vsync = false })
             love.timer.sleep(1 / value)
         end
         print("[BigMem] Framerate Limit set to: " .. tostring(value))
+
     elseif key == "optimizeInterval" then
         print("[BigMem] GC Interval set to: " .. tostring(value))
-    elseif key == "disableParticles" then
-        if value then
-            love.graphics.setDefaultFilter("nearest", "nearest")
-        else
-            love.graphics.setDefaultFilter("linear", "linear")
-        end
-    elseif key == "drawNonEssentialShaders" then
-        -- No specific function to call, handled in superboost.lua
-    elseif key == "hideConsumables" then
-        -- No specific function to call, handled in superboost.lua
-    elseif key == "hideDeck" then
-        -- No specific function to call, handled in superboost.lua
-    elseif key == "reduceAnimations" then
-        if value then
-            G.SHADERS_ENABLED = false
-        else
-            G.SHADERS_ENABLED = true
-        end
+
     elseif key == "superBoostMode" then
         require("bigmem.superboost").apply(value)
+
     elseif key == "rainbowTint" then
         require("bigmem.superboost").apply(BigMemConfig.getValue("superBoostMode"))
+
+    elseif key == "disableCardHoverPopup" then
+        G.SETTINGS.BigMem_disableCardHoverPopup = value
+
+    elseif key == "disableSaving" then
+        if value then disableSaving.apply() else disableSaving.disable() end
+
+    elseif key == "combineEvents" then
+        if value then events.apply() else events.disable() end
+
+    elseif key == "batchJokerEffects" then
+        if value then batchjoker.apply() else batchjoker.disable() end
+
+    elseif key == "flattenJokerCardLoop" then
+        if value then flatjoker.apply() else flatjoker.disable() end
+
+    elseif key == "reduceAnimations" or key == "disableParticles" then
+        if value then animations.apply() else animations.disable() end
     end
 end
-
-
 
 function BigMemConfig.applySettings()
     for key, setting in pairs(configMemory) do
@@ -363,10 +336,13 @@ function BigMemConfig.generateConfigTabs()
             tab_definition_function = function(args)
                 local nodes = {}
                 for key, def in pairs(configDefinition) do
-                    if hasValue({ 
+                    if hasValue({
                         "enableLogging", 
                         "optimizeInterval", 
                         "limitFramerate",
+                        "batchJokerEffects",
+                        "flattenJokerCardLoop",
+                        "combineEvents",
                     }, key) then
                         local ref = configMemory[key] or { value = def.default }
 
@@ -414,7 +390,7 @@ function BigMemConfig.generateConfigTabs()
             label = "Visuals",
             tab_definition_function = function(args)
                 local nodes = {}
-                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck", "disableParticles", "brightness"}) do
+                for _, key in ipairs({"superBoostMode", "reduceAnimations", "hideConsumables", "hideDeck", "disableParticles", "brightness", "disableCardHoverPopup"}) do
                     local def = configDefinition[key]
                     local ref = configMemory[key] or { value = def.default }
 
@@ -429,20 +405,6 @@ function BigMemConfig.generateConfigTabs()
                                 end,
                                 info = def.info,
                                 config = { font_size = 5 } -- Smaller font size
-                            }))
-                        elseif def.type == "slider" and key == "brightness" then
-                            table.insert(nodes, create_slider({
-                                label = def.label,
-                                ref_table = ref,
-                                ref_value = "value",
-                                min = def.min,
-                                max = def.max,
-                                step = def.step,
-                                callback = function(v)
-                                    G.FUNCS.BigMem_conf_slider_callback({ dp_key = key, to_val = v })
-                                end,
-                                info = def.info,
-                                config = { font_size = 5, width = "100%" } -- Full width slider
                             }))
                         elseif def.type == "select" and key == "brightness" then
                             local idx = hasValue(def.values, BigMemConfig.getValue(key)) or 1
@@ -478,7 +440,7 @@ function BigMemConfig.generateConfigTabs()
             tab_definition_function = function(args)
                 local nodes = {}
                 for key, def in pairs(configDefinition) do
-                    if hasValue({ "fastPow", "fastLog10", "fastExp", "fastSqrt", "fastLog2", "fastLn", "fastFactorial", "fastGamma" }, key) then
+                    if hasValue({ "fastPow", "fastLog10", "fastExp", "fastLog2", "fastLn", "fastFactorial", "fastGamma" }, key) then
                         local ref = configMemory[key] or { value = def.default }
                         if def.type == "toggle" then
                             table.insert(nodes, create_toggle({
@@ -548,7 +510,10 @@ function BigMemConfig.generateConfigTabs()
             tab_definition_function = function(args)
                 local nodes = {}
                 for key, def in pairs(configDefinition) do
-                    if hasValue({ "memoization", "precomputedTrig", "enableBatching", "fastFibonacci", "fastBinomial" }, key) then
+                    if hasValue({
+                        "memoization", "precomputedTrig", "fastFibonacci", "fastBinomial", "batchedJokerEval", "optimizedEventQueue",
+                        "disableSaving"
+                    }, key) then
                         local ref = configMemory[key] or { value = def.default }
                         if def.type == "toggle" then
                             table.insert(nodes, create_toggle({
@@ -558,6 +523,17 @@ function BigMemConfig.generateConfigTabs()
                                 callback = function(v)
                                     BigMemConfig.setValue(key, v)
                                 end,
+                                info = def.info,
+                                config = { font_size = 5 } -- Smaller font size
+                            }))
+                        elseif def.type == "select" then
+                            local idx = hasValue(def.values, BigMemConfig.getValue(key)) or 1
+                            table.insert(nodes, create_option_cycle({
+                                options = def.values,
+                                current_option = idx,
+                                opt_callback = "BigMem_conf_select_callback",
+                                label = def.label,
+                                dp_key = key,
                                 info = def.info,
                                 config = { font_size = 5 } -- Smaller font size
                             }))

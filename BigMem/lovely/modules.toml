@@ -1,49 +1,77 @@
 [manifest]
 version = "1.0.0"
+priority = 999999
 dump_lua = true
-priority = 0
+
+[[load]]
+after = ["Lovely"]
+path = "bigmem/smods.lua"
 
 [[patches]]
 [patches.module]
+name = "bigmem.config"
 source = "bigmem/config.lua"
 before = "main.lua"
-name = "bigmem.config"
 
 [[patches]]
 [patches.module]
-source = "bigmem/event_queue_patch.lua"
+name = "bigmem.core"
+source = "bigmem/core.lua"
 before = "main.lua"
-name = "bigmem.event_queue_patch"
 
 [[patches]]
 [patches.module]
+name = "bigmem.smods"
+source = "bigmem/smods.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.superboost"
+source = "bigmem/superboost.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.watcher"
 source = "bigmem/watcher.lua"
 before = "main.lua"
-name = "bigmem.watcher"
 
 [[patches]]
 [patches.module]
-source = "bigmem/core.lua"
-before = "engine/controller.lua"
-name = "bigmem.core"
-
-[[patches]]
-[patches.module]
-source = "bigmem/superboost.lua"
-before = "engine/controller.lua"
-name = "bigmem.superboost"
-
-[[patches]]
-[patches.module]
+name = "bigmem.mathopt"
 source = "bigmem/mathopt.lua"
 before = "main.lua"
-name = "bigmem.mathopt"
 
 [[patches]]
 [patches.module]
-source = "bigmem/mathopt.lua"
-before = "engine/math.lua"
-name = "bigmem.mathopt"
+name = "bigmem.animations"
+source = "bigmem/animations.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.events"
+source = "bigmem/events.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.batch_joker_effects"
+source = "bigmem/batch_joker_effects.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.flatten_joker_loop"
+source = "bigmem/flatten_joker_loop.lua"
+before = "main.lua"
+
+[[patches]]
+[patches.module]
+name = "bigmem.omegameter"
+source = "bigmem/omegameter.lua"
+before = "main.lua"
 
 [[patches]]
 [patches.module]
@@ -51,12 +79,8 @@ source = "bigmem/large_number_fix.lua"
 before = "main.lua"
 name = "bigmem.large_number_fix"
 
-[[modules]]
-name = "BigMem"
-main = "bigmem/main.lua"
-files = [
-    "bigmem/mathopt.lua",
-    "bigmem/config.lua",
-    "bigmem/event_queue_patch.lua",
-    "bigmem/config_ui.lua"
-]
+[[patches]]
+[patches.module]
+name = "bigmem.disable_saving"
+source = "bigmem/disable_saving.lua"
+before = "main.lua"
